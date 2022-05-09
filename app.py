@@ -6,6 +6,7 @@ from flask import Flask, render_template, jsonify, request, redirect, url_for
 from werkzeug.utils import secure_filename
 from datetime import datetime, timedelta
 
+
 app = Flask(__name__)
 app.config["TEMPLATES_AUTO_RELOAD"] = True
 app.config['UPLOAD_FOLDER'] = "./static/profile_pics"
@@ -60,10 +61,10 @@ def sign_in():
 
     if result is not None:
         payload = {
-            'id': username_receive,
-            'exp': datetime.utcnow() + timedelta(seconds=60 * 60 * 24)  # 로그인 24시간 유지
+         'id': username_receive,
+         'exp': datetime.utcnow() + timedelta(seconds=60 * 60 * 24)  # 로그인 24시간 유지
         }
-        token = jwt.encode(payload, SECRET_KEY, algorithm='HS256').decode('utf-8')
+        token = jwt.encode(payload, SECRET_KEY, algorithm='HS256')#decode('utf-8')
 
         return jsonify({'result': 'success', 'token': token})
     # 찾지 못하면
@@ -77,12 +78,12 @@ def sign_up():
     password_receive = request.form['password_give']
     password_hash = hashlib.sha256(password_receive.encode('utf-8')).hexdigest()
     doc = {
-        "username": username_receive,  # 아이디
-        "password": password_hash,  # 비밀번호
-        "profile_name": username_receive,  # 프로필 이름 기본값은 아이디
-        "profile_pic": "",  # 프로필 사진 파일 이름
-        "profile_pic_real": "profile_pics/profile_placeholder.png",  # 프로필 사진 기본 이미지
-        "profile_info": ""  # 프로필 한 마디
+        "username": username_receive,                               # 아이디
+        "password": password_hash,                                  # 비밀번호
+        "profile_name": username_receive,                           # 프로필 이름 기본값은 아이디
+        "profile_pic": "",                                          # 프로필 사진 파일 이름
+        "profile_pic_real": "profile_pics/profile_placeholder.png", # 프로필 사진 기본 이미지
+        "profile_info": ""                                          # 프로필 한 마디
     }
     db.users.insert_one(doc)
     return jsonify({'result': 'success'})
@@ -90,9 +91,8 @@ def sign_up():
 
 @app.route('/sign_up/check_dup', methods=['POST'])
 def check_dup():
-    username_receive = request.form['username_give']
-    exists = bool(db.users.find_one({"username": username_receive}))
-    return jsonify({'result': 'success', 'exists': exists})
+    # ID 중복확인
+    return jsonify({'result': 'success'})
 
 
 @app.route('/update_profile', methods=['POST'])
