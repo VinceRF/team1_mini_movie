@@ -1,5 +1,5 @@
+#리뷰작성하기
 function post() {
-    # 리뷰 작성
     let comment = $("#comment").val()
     let today = new Date().toISOString()
     let url2 = $('#url').val()
@@ -28,8 +28,8 @@ function post() {
     })
 }
 
+#리뷰붙여넣기
 function get_posts(username) {
-    # 리뷰 붙여넣기
     if (username == undefined) {
         username = ""
     }
