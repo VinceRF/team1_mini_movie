@@ -1,3 +1,4 @@
+from bs4 import BeautifulSoup
 from pymongo import MongoClient
 import jwt
 import datetime
@@ -6,15 +7,17 @@ from flask import Flask, render_template, jsonify, request, redirect, url_for
 from werkzeug.utils import secure_filename
 from datetime import datetime, timedelta
 
-
 app = Flask(__name__)
 app.config["TEMPLATES_AUTO_RELOAD"] = True
 app.config['UPLOAD_FOLDER'] = "./static/profile_pics"
 
 SECRET_KEY = 'SPARTA'
 
-client = MongoClient('localhost', 27017)
+client = MongoClient('localhost', 27017) #로컬에서 할때
+#client = MongoClient('mongodb://test:test@localhost', 27017) # AC2 로 공유할때
 db = client.dbsparta_plus_week4
+
+import requests
 
 
 @app.route('/')
@@ -22,8 +25,8 @@ def home():
     token_receive = request.cookies.get('mytoken')
     try:
         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
-
-        return render_template('index.html')
+        user_info = db.users.find_one({"username": payload["id"]})
+        return render_template('index.html', user_info=user_info)
     except jwt.ExpiredSignatureError:
         return redirect(url_for("login", msg="로그인 시간이 만료되었습니다."))
     except jwt.exceptions.DecodeError:
@@ -61,10 +64,10 @@ def sign_in():
 
     if result is not None:
         payload = {
-         'id': username_receive,
-         'exp': datetime.utcnow() + timedelta(seconds=60 * 60 * 24)  # 로그인 24시간 유지
+            'id': username_receive,
+            'exp': datetime.utcnow() + timedelta(seconds=60 * 60 * 24)  # 로그인 24시간 유지
         }
-        token = jwt.encode(payload, SECRET_KEY, algorithm='HS256')#decode('utf-8')
+        token = jwt.encode(payload, SECRET_KEY, algorithm='HS256')  # .decode('utf-8') #로컬시 주석차리
 
         return jsonify({'result': 'success', 'token': token})
     # 찾지 못하면
@@ -78,21 +81,51 @@ def sign_up():
     password_receive = request.form['password_give']
     password_hash = hashlib.sha256(password_receive.encode('utf-8')).hexdigest()
     doc = {
-        "username": username_receive,                               # 아이디
-        "password": password_hash,                                  # 비밀번호
-        "profile_name": username_receive,                           # 프로필 이름 기본값은 아이디
-        "profile_pic": "",                                          # 프로필 사진 파일 이름
-        "profile_pic_real": "profile_pics/profile_placeholder.png", # 프로필 사진 기본 이미지
-        "profile_info": ""                                          # 프로필 한 마디
+        "username": username_receive,
+        "password": password_hash,
+        "profile_name": username_receive,
+        "profile_pics": "",
+        "profile_pic_real": "profile_pics/profile_placeholder.png",
+        "profile_info": ""
     }
     db.users.insert_one(doc)
     return jsonify({'result': 'success'})
 
 
+# @app.route("/movies", methods=["POST"])
+# def movie_post():
+#     url_receive = request.form['url_give']
+#     star_receive = request.form['star_give']
+#     comment_receive = request.form['comment_give']
+#
+#     headers = {
+#         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.86 Safari/537.36'}
+#     data = requests.get(url_receive, headers=headers)
+#
+#     soup = BeautifulSoup(data.text, 'html.parser')
+#
+#     title = soup.select_one('meta[property="og:title"]')['content']
+#     image = soup.select_one('meta[property="og:image"]')['content']
+#     desc = soup.select_one('meta[property="og:description"]')['content']
+#
+#     doc = {
+#         'title': title,
+#         'image': image,
+#         'desc': desc,
+#         'star': star_receive,
+#         'comment': comment_receive
+#     }
+#     db.movies.insert_one(doc)
+#
+#     return jsonify({'msg': 'POST 연결 완료!'})
+
+
 @app.route('/sign_up/check_dup', methods=['POST'])
 def check_dup():
-    # ID 중복확인
-    return jsonify({'result': 'success'})
+    username_receive = request.form['username_give']
+    exists = bool(db.users.find_one({"username": username_receive}))
+    # print(value_receive, type_receive, exists)
+    return jsonify({'result': 'success', 'exists': exists})
 
 
 @app.route('/update_profile', methods=['POST'])
@@ -100,7 +133,22 @@ def save_img():
     token_receive = request.cookies.get('mytoken')
     try:
         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
-        # 프로필 업데이트
+        username = payload["id"]
+        name_receive = request.form["name_give"]
+        about_receive = request.form["about_give"]
+        new_doc = {
+            "profile_name": name_receive,
+            "profile_info": about_receive
+        }
+        if 'file_give' in request.files:
+            file = request.files["file_give"]
+            filename = secure_filename(file.filename)
+            extension = filename.split(".")[-1]
+            file_path = f"profile_pics/{username}.{extension}"
+            file.save("./static/" + file_path)
+            new_doc["profile_pics"] = filename
+            new_doc["profile_pic_real"] = file_path
+        db.users.update_one({'username': payload['id']}, {'$set': new_doc})
         return jsonify({"result": "success", 'msg': '프로필을 업데이트했습니다.'})
     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
         return redirect(url_for("home"))
@@ -111,7 +159,42 @@ def posting():
     token_receive = request.cookies.get('mytoken')
     try:
         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
+
         # 포스팅하기
+        user_info = db.users.find_one({"username": payload["id"]})
+        comment_receive = request.form["comment_give"]
+        date_receive = request.form["date_give"]
+        url_receive = request.form['url_give']
+        star_receive = request.form['star_give']
+        post_list = list(db.posts.find({}, {'_id': False}))
+
+        num = len(post_list) + 1
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.86 Safari/537.36'}
+        data = requests.get(url_receive, headers=headers)
+
+        soup = BeautifulSoup(data.text, 'html.parser')
+
+        title = soup.select_one('meta[property="og:title"]')['content']
+        image = soup.select_one('meta[property="og:image"]')['content']
+        desc = soup.select_one('meta[property="og:description"]')['content']
+
+        print(type(date_receive))
+        doc = {
+            "username": user_info["username"],
+            "profile_name": user_info["profile_name"],
+            "profile_pic_real": user_info["profile_pic_real"],
+            "comment": comment_receive,
+            "date": date_receive,
+            "title": title,
+            "image": image,
+            "desc": desc,
+            "star": star_receive,
+            "url":url_receive,
+            "num":num
+
+        }
+        db.posts.insert_one(doc)
         return jsonify({"result": "success", 'msg': '포스팅 성공'})
     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
         return redirect(url_for("home"))
@@ -122,8 +205,29 @@ def get_posts():
     token_receive = request.cookies.get('mytoken')
     try:
         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
-        # 포스팅 목록 받아오기
-        return jsonify({"result": "success", "msg": "포스팅을 가져왔습니다."})
+        my_username = payload["id"]
+        username_receive = request.args.get("username_give")
+        if username_receive == "":
+            posts = list(db.posts.find({}).sort("date", -1).limit(20))
+        else:
+            posts = list(db.posts.find({"username": username_receive}).sort("date", -1).limit(20))
+
+        for post in posts:
+            post["_id"] = str(post["_id"])
+
+            post["count_heart"] = db.likes.count_documents({"post_id": post["_id"], "type": "heart"})
+            post["heart_by_me"] = bool(
+                db.likes.find_one({"post_id": post["_id"], "type": "heart", "username": my_username}))
+
+            post["count_down"] = db.likes.count_documents({"post_id": post["_id"], "type": "down"})
+            post["down_by_me"] = bool(
+                db.likes.find_one({"post_id": post["_id"], "type": "down", "username": my_username}))
+
+            post["count_like"] = db.likes.count_documents({"post_id": post["_id"], "type": "like"})
+            post["like_by_me"] = bool(
+                db.likes.find_one({"post_id": post["_id"], "type": "like", "username": my_username}))
+
+        return jsonify({"result": "success", "msg": "포스팅을 가져왔습니다.", "posts": posts})
     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
         return redirect(url_for("home"))
 
@@ -134,7 +238,22 @@ def update_like():
     try:
         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
         # 좋아요 수 변경
-        return jsonify({"result": "success", 'msg': 'updated'})
+        user_info = db.users.find_one({"username": payload["id"]})
+        post_id_receive = request.form["post_id_give"]
+        type_receive = request.form["type_give"]
+        action_receive = request.form["action_give"]
+        doc = {
+            "post_id": post_id_receive,
+            "username": user_info["username"],
+            "type": type_receive
+        }
+        if action_receive == "like":
+            db.likes.insert_one(doc)
+        else:
+            db.likes.delete_one(doc)
+        count = db.likes.count_documents({"post_id": post_id_receive, "type": type_receive})
+        print(count)
+        return jsonify({"result": "success", 'msg': 'updated', "count": count})
     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
         return redirect(url_for("home"))
 
