@@ -69,7 +69,7 @@
             var regExp = /^(?=.*\d)(?=.*[a-zA-Z])[0-9a-zA-Z!@#$%^&*]{8,20}$/;
             return regExp.test(asValue);
         }
-        
+
         function check_dup() {
             let username = $("#input-username").val()
             console.log(username)
@@ -103,7 +103,7 @@
                 }
             });
         }
-        
+
        <!--회원가입 구현 -->
         function sign_up() {
             let username = $("#input-username").val()
@@ -119,8 +119,8 @@
                 alert("아이디 중복확인을 해주세요.")
                 return;
             }
-            
-            
+
+
             if (password == "") {
                 $("#help-password").text("비밀번호를 입력해주세요.").removeClass("is-safe").addClass("is-danger")
                 $("#input-password").focus()
@@ -207,7 +207,7 @@
             <h3 class="subtitle is-sparta"></h3>
         </div>
     </section>
-    
+
     <!--로그인 화면 부분 -->
     <section class="section">
         <div class="container">
