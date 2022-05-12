@@ -62,7 +62,7 @@
 ![image](https://user-images.githubusercontent.com/103364805/167999452-56a9f493-e517-45bb-9b3b-4f2885bf673f.png)
 
 2. 메인페이지
-![image](https://user-images.githubusercontent.com/103364805/167999551-b69d4010-f3df-4dd2-b5d5-dc0776da2d84.png)
+![image](https://user-images.githubusercontent.com/103364805/168003391-29158b76-5f0c-4336-ad7a-b452b452db67.png)
 
 3. 영화 등록
 ![image](https://user-images.githubusercontent.com/103364805/167999680-d4edb2de-9938-4a7f-8e3f-cc26fb3ca229.png)
