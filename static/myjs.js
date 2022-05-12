@@ -1,4 +1,5 @@
 function post() {
+    # 리뷰 작성
     let comment = $("#comment").val()
     let today = new Date().toISOString()
     let url2 = $('#url').val()
@@ -28,6 +29,7 @@ function post() {
 }
 
 function get_posts(username) {
+    # 리뷰 
     if (username == undefined) {
         username = ""
     }
