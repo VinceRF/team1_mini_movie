@@ -77,6 +77,7 @@ def sign_in():
 
 @app.route('/sign_up/save', methods=['POST'])
 def sign_up():
+    # 회원가입
     username_receive = request.form['username_give']
     password_receive = request.form['password_give']
     password_hash = hashlib.sha256(password_receive.encode('utf-8')).hexdigest()
@@ -92,36 +93,9 @@ def sign_up():
     return jsonify({'result': 'success'})
 
 
-# @app.route("/movies", methods=["POST"])
-# def movie_post():
-#     url_receive = request.form['url_give']
-#     star_receive = request.form['star_give']
-#     comment_receive = request.form['comment_give']
-#
-#     headers = {
-#         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.86 Safari/537.36'}
-#     data = requests.get(url_receive, headers=headers)
-#
-#     soup = BeautifulSoup(data.text, 'html.parser')
-#
-#     title = soup.select_one('meta[property="og:title"]')['content']
-#     image = soup.select_one('meta[property="og:image"]')['content']
-#     desc = soup.select_one('meta[property="og:description"]')['content']
-#
-#     doc = {
-#         'title': title,
-#         'image': image,
-#         'desc': desc,
-#         'star': star_receive,
-#         'comment': comment_receive
-#     }
-#     db.movies.insert_one(doc)
-#
-#     return jsonify({'msg': 'POST 연결 완료!'})
-
-
 @app.route('/sign_up/check_dup', methods=['POST'])
 def check_dup():
+    #ID 중복체크
     username_receive = request.form['username_give']
     exists = bool(db.users.find_one({"username": username_receive}))
     # print(value_receive, type_receive, exists)
@@ -205,6 +179,7 @@ def get_posts():
     token_receive = request.cookies.get('mytoken')
     try:
         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
+        #DB에서 데이터 가져오기
         my_username = payload["id"]
         username_receive = request.args.get("username_give")
         if username_receive == "":
