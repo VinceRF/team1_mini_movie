@@ -29,7 +29,7 @@ function post() {
 }
 
 function get_posts(username) {
-    # 리뷰 
+    # 리뷰 붙여넣기
     if (username == undefined) {
         username = ""
     }
