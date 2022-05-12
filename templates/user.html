@@ -20,12 +20,22 @@
 
         <link rel="preconnect" href="https://fonts.gstatic.com">
         <link href="https://fonts.googleapis.com/css2?family=Gamja+Flower&family=Stylish&display=swap" rel="stylesheet">
-        <link href="{{ url_for('static', filename='mystyle.css') }}" rel="stylesheet">
+        <link href="{{ url_for('static', filename='user.css') }}" rel="stylesheet">
 
         <!-- JS -->
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
         <script src="{{ url_for('static', filename='myjs.js') }}"></script>
+
+
+         <!-- 부트스트랩 -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+              integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+              crossorigin="anonymous">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+                integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+                crossorigin="anonymous"></script>
 
 
         <script>
@@ -54,13 +64,14 @@
                         if (response["result"] == "success") {
                             alert(response["msg"])
                             window.location.reload()
-
                         }
                     }
                 });
             }
 
             function sign_out() {
+                $.removeCookie = function (mytoken, param2) {
+                }
                 $.removeCookie('mytoken', {path: '/'});
                 alert('로그아웃!')
                 window.location.href = "/login"
@@ -68,22 +79,22 @@
         </script>
 
     </head>
-    <body class="has-navbar-fixed-top">
-        <nav class="navbar is-fixed-top is-white" role="navigation" aria-label="main navigation">
+    <body class="has-navbar-fixed-top" style="background-image: url('/static/background/curtain-1275200.png'); min-height:10000px; background-attachment: fixed">
+        <nav class="navbar is-fixed-top" role="navigation" aria-label="main navigation" style="background-image: url('/static/background/person-1831160_1920.png'); height:200px";>
             <div class="navbar-brand">
                 <a class="navbar-item" href="/">
-                    <img src="{{ url_for('static', filename='logo.png') }}">
                     <strong class="is-sparta"
-                            style="font-family: 'Stylish', sans-serif;font-size: larger;">SWEETER</strong>
+                            style="font-family: 'Stylish', sans-serif;font-size: 50px;color:white">영화가 좋아</strong>
                 </a>
-
-
             </div>
-
         </nav>
 
-        <section class="hero is-white" style="background-image: url('/static/background/20190121_153722.jpg')">
-            <div class="hero-body" style="padding-bottom:1rem;margin:auto;min-width: 400px">
+
+
+
+        <div class="kkk">
+            <div class="hero">
+            <div class="hero-body" style="margin:150px auto auto auto;max-width: 400px">
                 <article class="media">
 
                     <figure class="media-left" style="align-self: center">
@@ -94,12 +105,11 @@
                     <div class="media-content">
                         <div class="content">
                             <p>
-                                <strong>{{ user_info.profile_name }}</strong> <small>@{{ user_info.username }}</small>
+                                <strong style="font-color:white">{{ user_info.profile_name }}</strong> <small style="font-color:white">@{{ user_info.username }}</small>
                                 <br>
                                 {{ user_info.profile_info }}
                             </p>
                         </div>
-
                     </div>
                 </article>
                 {% if status %}
@@ -183,65 +193,11 @@
                     </div>
                 {% endif %}
             </div>
-        </section>
-        {% if status %}
-            <section id="section-post" class="section">
-                <article class="media">
-                    <figure class="media-left" style="align-self: center">
-                             <a class="image is-32x32" href="/user/{{ user_info.username }}">
-                                 <img class="is-rounded" src="{{ url_for('static', filename=user_info.profile_pic_real) }}">
-                             </a>
-                    </figure>
-                    <div class="media-content">
-                        <div class="field">
-                            <p class="control">
-                                     <input id="input-post" class="input is-rounded" placeholder="무슨 생각을 하고 계신가요?"
-                                            onclick='$("#modal-post").addClass("is-active")'>
-                            </p>
-                        </div>
-                    </div>
-                </article>
-                <div class="modal" id="modal-post">
-                    <div class="modal-background" onclick='$("#modal-post").removeClass("is-active")'></div>
-                    <div class="modal-content">
-                        <div class="box">
-                            <article class="media">
-                                <div class="media-content">
-                                    <div class="field">
-                                        <p class="control">
-                                        <textarea id="textarea-post" class="textarea"
-                                                  placeholder="무슨 생각을 하고 계신가요?"></textarea>
-                                        </p>
-                                    </div>
-                                    <nav class="level is-mobile">
-                                        <div class="level-left">
+        </div>
+             <div id="post-box"  class="row row-cols-1 row-cols-md-4 g-4" style="width:100%;">
 
-                                        </div>
-                                        <div class="level-right">
-                                            <div class="level-item">
-                                                <a class="button is-sparta" onclick="post()">포스팅하기</a>
-                                            </div>
-                                            <div class="level-item">
-                                                <a class="button is-sparta is-outlined"
-                                                   onclick='$("#modal-post").removeClass("is-active")'>취소</a>
-                                            </div>
-                                        </div>
-                                    </nav>
-                                </div>
-                            </article>
-                        </div>
-                    </div>
-                    <button class="modal-close is-large" aria-label="close"
-                            onclick='$("#modal-post").removeClass("is-active")'></button>
-                </div>
-
-            </section>
-        {% endif %}
-        <section class="section">
-            <div id="post-box" class="container">
-
-            </div>
-        </section>
+             </div>
+        </div>
 
     </body>
 </html>
