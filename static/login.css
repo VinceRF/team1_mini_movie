@@ -1,0 +1,23 @@
+.total-body {
+
+    height: 100vh;
+    background-image: url('/static/background/login.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.is-sparta {
+    color: #e8344e;
+}
+
+.button.is-sparta {
+    background-color: #e8344e;
+    border-color: transparent;
+    color: #fff;
+}
+
+.button.is-sparta.is-outlined {
+    background-color: transparent;
+    border-color: #e8344e;
+    color: #e8344e; /*회원가입하기 버튼*/
+}

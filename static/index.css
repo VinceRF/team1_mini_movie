@@ -1,0 +1,27 @@
+body{
+
+    background-color: #2d7ac5;
+    /*background-image: url("background/20190121_153722.jpg");
+    background-size: cover;*/
+
+}
+
+.kkk {
+
+    padding: 1rem 1.5rem;
+    max-width: 100%;
+    margin: 100px auto auto auto;
+    display: flex;
+
+    background-image: url("/static/background/movieback.png");
+    background-attachment: fixed;
+    background-size: cover;
+
+}
+
+.box-top {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
